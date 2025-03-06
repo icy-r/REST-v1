@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
@@ -7,7 +6,9 @@ const exchangeRateSchema = new Schema({
     baseCurrency: { type: String, required: true },
     targetCurrency: { type: String, required: true },
     rate: { type: Number, required: true },
-    timestamp: { type: Date, default: Date.now }
+    timestamp: { type: Date, default: Date.now },
+    source: { type: String, required: true },
+    lastUpdate: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('ExchangeRate', exchangeRateSchema);
