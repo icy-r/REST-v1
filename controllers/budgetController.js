@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Budget = require('../models/Budget');
 const Category = require('../models/Category');
 const Transaction = require('../models/Transaction');
+const Notification = require('../models/Notification');
 
 // Create budget
 exports.createBudget = async (req, res) => {
@@ -144,5 +145,69 @@ exports.deleteBudget = async (req, res) => {
             message: 'Error deleting budget',
             error: error.message
         });
+    }
+};
+
+// Notify users when nearing or exceeding budgets
+exports.notifyBudgetStatus = async () => {
+    try {
+        const budgets = await Budget.find();
+        
+        for (const budget of budgets) {
+            const transactions = await Transaction.find({
+                userId: budget.userId,
+                category: budget.category,
+                date: { $gte: budget.startDate, $lte: budget.endDate }
+            });
+            
+            const totalSpent = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+            const budgetUsage = totalSpent / budget.amount;
+            
+            if (budgetUsage >= budget.notificationThreshold) {
+                const notification = new Notification({
+                    userId: budget.userId,
+                    type: 'budget',
+                    message: `You have used ${Math.round(budgetUsage * 100)}% of your budget for ${budget.category}`,
+                    status: 'unread'
+                });
+                
+                await notification.save();
+            }
+        }
+    } catch (error) {
+        console.error('Error notifying budget status:', error);
+    }
+};
+
+// Provide budget adjustment recommendations based on spending trends
+exports.provideBudgetRecommendations = async () => {
+    try {
+        const budgets = await Budget.find();
+        
+        for (const budget of budgets) {
+            const transactions = await Transaction.find({
+                userId: budget.userId,
+                category: budget.category,
+                date: { $gte: budget.startDate, $lte: budget.endDate }
+            });
+            
+            const totalSpent = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+            const budgetUsage = totalSpent / budget.amount;
+            
+            if (budgetUsage >= budget.notificationThreshold) {
+                const recommendation = `Consider adjusting your budget for ${budget.category} based on your spending trends.`;
+                
+                const notification = new Notification({
+                    userId: budget.userId,
+                    type: 'budget-recommendation',
+                    message: recommendation,
+                    status: 'unread'
+                });
+                
+                await notification.save();
+            }
+        }
+    } catch (error) {
+        console.error('Error providing budget recommendations:', error);
     }
 };

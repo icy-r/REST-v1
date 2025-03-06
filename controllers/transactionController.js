@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Transaction = require('../models/Transaction');
 const Category = require('../models/Category');
+const Notification = require('../models/Notification');
 
 // Create transaction
 exports.createTransaction = async (req, res) => {
@@ -242,5 +243,69 @@ exports.getTransactionSummary = async (req, res) => {
             message: 'Error getting transaction summary',
             error: error.message
         });
+    }
+};
+
+// Handle recurring transactions
+exports.handleRecurringTransactions = async () => {
+    try {
+        const now = new Date();
+        const recurringTransactions = await Transaction.find({
+            isRecurring: true,
+            'recurringDetails.endDate': { $gte: now },
+            'recurringDetails.lastProcessed': { $lt: now }
+        });
+
+        for (const transaction of recurringTransactions) {
+            const { frequency, lastProcessed } = transaction.recurringDetails;
+            let nextDate;
+
+            switch (frequency) {
+                case 'daily':
+                    nextDate = new Date(lastProcessed);
+                    nextDate.setDate(nextDate.getDate() + 1);
+                    break;
+                case 'weekly':
+                    nextDate = new Date(lastProcessed);
+                    nextDate.setDate(nextDate.getDate() + 7);
+                    break;
+                case 'monthly':
+                    nextDate = new Date(lastProcessed);
+                    nextDate.setMonth(nextDate.getMonth() + 1);
+                    break;
+                case 'yearly':
+                    nextDate = new Date(lastProcessed);
+                    nextDate.setFullYear(nextDate.getFullYear() + 1);
+                    break;
+            }
+
+            if (nextDate <= now) {
+                const newTransaction = new Transaction({
+                    ...transaction.toObject(),
+                    _id: mongoose.Types.ObjectId(),
+                    date: nextDate,
+                    recurringDetails: {
+                        ...transaction.recurringDetails,
+                        lastProcessed: nextDate
+                    }
+                });
+
+                await newTransaction.save();
+                transaction.recurringDetails.lastProcessed = nextDate;
+                await transaction.save();
+
+                // Send notification for upcoming or missed recurring transactions
+                const notification = new Notification({
+                    userId: transaction.userId,
+                    type: 'recurring-transaction',
+                    message: `Recurring transaction processed: ${transaction.description}`,
+                    status: 'unread'
+                });
+
+                await notification.save();
+            }
+        }
+    } catch (error) {
+        console.error('Error handling recurring transactions:', error);
     }
 };

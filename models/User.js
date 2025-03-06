@@ -32,6 +32,11 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: 'USD'
     },
+    notificationPreferences: {
+        type: Map,
+        of: String,
+        default: {}
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     createdAt: {

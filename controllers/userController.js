@@ -99,7 +99,8 @@ exports.updateDetails = async (req, res) => {
         const fieldsToUpdate = {
             name: req.body.name,
             email: req.body.email,
-            preferredCurrency: req.body.preferredCurrency
+            preferredCurrency: req.body.preferredCurrency,
+            notificationPreferences: req.body.notificationPreferences
         };
         
         // Filter out undefined fields
@@ -165,6 +166,66 @@ exports.getUsers = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error getting users',
+            error: error.message
+        });
+    }
+};
+
+// Update user's preferred currency
+exports.updatePreferredCurrency = async (req, res) => {
+    try {
+        const { preferredCurrency } = req.body;
+
+        if (!preferredCurrency) {
+            return res.status(400).json({
+                success: false,
+                message: 'Preferred currency is required'
+            });
+        }
+
+        const user = await User.findByIdAndUpdate(req.user.id, { preferredCurrency }, {
+            new: true,
+            runValidators: true
+        });
+
+        res.status(200).json({
+            success: true,
+            data: user
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error updating preferred currency',
+            error: error.message
+        });
+    }
+};
+
+// Update user's notification preferences
+exports.updateNotificationPreferences = async (req, res) => {
+    try {
+        const { notificationPreferences } = req.body;
+
+        if (!notificationPreferences) {
+            return res.status(400).json({
+                success: false,
+                message: 'Notification preferences are required'
+            });
+        }
+
+        const user = await User.findByIdAndUpdate(req.user.id, { notificationPreferences }, {
+            new: true,
+            runValidators: true
+        });
+
+        res.status(200).json({
+            success: true,
+            data: user
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error updating notification preferences',
             error: error.message
         });
     }
