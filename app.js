@@ -25,14 +25,16 @@ const budgetRoutes = require('./routes/budget_routes');
 const goalRoutes = require('./routes/goal_routes');
 const categoryRoutes = require('./routes/category_routes');
 const reportRoutes = require('./routes/report_routes');
+const dashboardRoutes = require("./routes/dashboard_routes");
 
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/budgets', budgetRoutes);
-app.use('/api/goals', goalRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/reports', reportRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/budgets", budgetRoutes);
+app.use("/api/goals", goalRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.get("/", (_req, res) => {
   res.send("Hello World!");

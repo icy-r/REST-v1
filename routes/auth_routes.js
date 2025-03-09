@@ -1,19 +1,31 @@
 const routes = require('express').Router();
-const authController = require('../middleware/authmiddleware');
-const { body } = require('express-validator');
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
-const { verifyToken } = require('../middleware/jwtauth');
+const authController = require("../controllers/authController");
+const { body } = require("express-validator");
+const User = require("../models/User");
+const { verifyToken } = require("../middleware/jwtauth");
 
-routes.post('/register', [
-    body('username').isLength({ min: 5 }).custom((value, { req }) => {
-        return
-    }),
-    body('password').isLength({ min: 5 }),
-    body('email').isEmail(),
-    body('name').not().isEmpty().withMessage('Name is required'),
-    body('role').optional().isIn(['user', 'admin']).withMessage('Invalid role')
-], authController.register);
+routes.post(
+  "/register",
+  [
+    body("username")
+      .isLength({ min: 5 })
+      .withMessage("Username must be at least 5 characters")
+      .custom(async (value) => {
+        const existingUser = await User.findOne({ username: value });
+        if (existingUser) {
+          throw new Error("Username already in use");
+        }
+        return true;
+      }),
+    body("password")
+      .isLength({ min: 5 })
+      .withMessage("Password must be at least 5 characters"),
+    body("email").isEmail().withMessage("Please include a valid email"),
+    body("name").not().isEmpty().withMessage("Name is required"),
+    body("role").optional().isIn(["user", "admin"]).withMessage("Invalid role"),
+  ],
+  authController.register
+);
 
 routes.post('/login', authController.login);
 

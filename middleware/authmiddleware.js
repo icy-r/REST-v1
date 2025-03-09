@@ -1,45 +1,48 @@
-const isAdmin = (req, res, next) => {
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+
+// Check if user is an admin
+exports.isAdmin = async (req, res, next) => {
   if (req.user && req.user.role === "admin") {
-    return next();
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied - Admin authorization required",
+    });
   }
-  return res
-    .status(403)
-    .json({ message: "Access denied: Admin privileges required" });
 };
 
-const isResourceOwner = (model) => {
-  return async (req, res, next) => {
-    try {
-      const resourceId = req.params.id;
-      const resource = await model.findById(resourceId);
+// Check if user is the resource owner
+exports.isResourceOwner = (Model) => async (req, res, next) => {
+  try {
+    const resource = await Model.findById(req.params.id);
 
-      if (!resource) {
-        return res.status(404).json({ message: "Resource not found" });
-      }
-
-      // Allow admins full access
-      if (req.user.role === "admin") {
-        return next();
-      }
-
-      // Check if regular user owns the resource
-      if (resource.userId && resource.userId.toString() === req.user.id) {
-        return next();
-      }
-
-      return res
-        .status(403)
-        .json({ message: "Access denied: You do not own this resource" });
-    } catch (error) {
-      return res.status(500).json({
-        message: "Error validating resource ownership",
-        error: error.message,
+    if (!resource) {
+      return res.status(404).json({
+        success: false,
+        message: "Resource not found",
       });
     }
-  };
-};
 
-module.exports = {
-  isAdmin,
-  isResourceOwner,
+    // Check if user owns resource or is admin
+    if (
+      (resource.userId && resource.userId.toString() === req.user.id) ||
+      req.user.role === "admin"
+    ) {
+      next();
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied - Not authorized to access this resource",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
 };
