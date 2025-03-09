@@ -13,6 +13,8 @@ This project is a RESTful API for managing a Personal Finance Tracker system. Th
 
 ## API Documentation
 
+The API is fully documented using Swagger/OpenAPI. Once the application is running, you can access the interactive API documentation at:
+
 ### Authentication Routes
 - **POST /api/auth/register**: Register a new user.
 - **POST /api/auth/login**: Login a user.
