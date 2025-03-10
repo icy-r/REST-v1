@@ -124,3 +124,5 @@ describe('Budget Controller', () => {
     });
   });
 });
+
+module.exports = app;

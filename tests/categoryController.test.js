@@ -13,7 +13,7 @@ jest.mock('../middleware/jwtauth', () => ({
 
 describe('Category Controller', () => {
   beforeAll(async () => {
-    const url = `mongodb://127.0.0.1/test_database`;
+    const url = global.__MONGO_URI__;
     await mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
   });
 
@@ -125,3 +125,5 @@ describe('Category Controller', () => {
     });
   });
 });
+
+module.exports = app;

@@ -10,7 +10,7 @@ const mongoURI = process.env.MONGO_URI;
 
 console.log(mongoURI);
 
-mongoose.connect(mongoURI);
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
@@ -64,3 +64,5 @@ app.listen(port, () => {
     `API Documentation available at http://localhost:${port}/api-docs`
   );
 });
+
+module.exports = app;

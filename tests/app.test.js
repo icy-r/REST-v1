@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 
 describe('Integration Tests for app.js', () => {
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI, {
+    await mongoose.connect(global.__MONGO_URI__, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
@@ -31,3 +31,5 @@ describe('Integration Tests for app.js', () => {
     expect(res.text).toEqual('Something broke!');
   });
 });
+
+module.exports = app;

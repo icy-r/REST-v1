@@ -15,8 +15,7 @@ app.put('/api/auth/update-password', verifyToken, authController.updatePassword)
 
 describe('Auth Controller', () => {
   beforeAll(async () => {
-    const mongoURI = 'mongodb://localhost:27017/testdb';
-    await mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect(global.__MONGO_URI__, { useNewUrlParser: true, useUnifiedTopology: true });
   });
 
   afterAll(async () => {
@@ -219,3 +218,5 @@ describe('Auth Controller', () => {
     });
   });
 });
+
+module.exports = app;

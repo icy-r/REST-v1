@@ -129,3 +129,5 @@ describe('Goal Controller', () => {
     });
   });
 });
+
+module.exports = app;
