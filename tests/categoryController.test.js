@@ -13,8 +13,7 @@ jest.mock('../middleware/jwtauth', () => ({
 
 describe('Category Controller', () => {
   beforeAll(async () => {
-    const url = global.__MONGO_URI__;
-    await mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect(process.env.MONGO_URI);
   });
 
   afterAll(async () => {

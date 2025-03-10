@@ -4,10 +4,7 @@ const mongoose = require('mongoose');
 
 describe('Integration Tests for app.js', () => {
   beforeAll(async () => {
-    await mongoose.connect(global.__MONGO_URI__, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URI);
   });
 
   afterAll(async () => {

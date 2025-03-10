@@ -12,10 +12,7 @@ describe('Goal Controller', () => {
 
   beforeAll(async () => {
     // Connect to the in-memory database
-    await mongoose.connect(global.__MONGO_URI__, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URI);
 
     // Create a test user
     const user = await User.create({
