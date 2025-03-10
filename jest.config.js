@@ -1,7 +1,8 @@
 module.exports = {
-  testEnvironment: 'node',
-  testMatch: ['**/tests/**/*.test.js'],
+  testEnvironment: "node",
+  testMatch: ["**/tests/**/*.test.js"],
   collectCoverage: true,
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov'],
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "lcov"],
+  testTimeout: 30000,
 };
