@@ -94,3 +94,9 @@ exports.deleteCategory = async (req, res) => {
         return res.status(500).json({ message: 'Error deleting category', error: error.message });
     }
 };
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Application specific logging, throwing an error, or other logic here
+    process.exit(1);
+});
