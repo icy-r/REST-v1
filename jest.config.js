@@ -4,4 +4,5 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov'],
+  testTimeout: 30000,
 };

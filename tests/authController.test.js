@@ -1,6 +1,7 @@
 const request = require('supertest');
 const express = require('express');
 const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
 const authController = require('../controllers/authController');
 const User = require('../models/User');
 const { verifyToken } = require('../middleware/jwtauth');
@@ -14,14 +15,20 @@ app.put('/api/auth/update-details', verifyToken, authController.updateDetails);
 app.put('/api/auth/update-password', verifyToken, authController.updatePassword);
 
 describe('Auth Controller', () => {
+  let mongoServer;
+
   beforeAll(async () => {
-    const mongoURI = 'mongodb://localhost:27017/testdb';
-    await mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
-  });
+    jest.setTimeout(30000);
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+    await mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
+  }, 30000);
 
   afterAll(async () => {
-    await mongoose.connection.db.dropDatabase();
     await mongoose.connection.close();
+    if (mongoServer) {
+      await mongoServer.stop();
+    }
   });
 
   describe('Register', () => {
