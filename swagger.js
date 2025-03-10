@@ -84,6 +84,18 @@ const swaggerDefinition = {
           status: { type: 'string', enum: ['in-progress', 'completed', 'cancelled'] }
         }
       },
+      Notification: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string' },
+          userId: { type: 'string' },
+          type: { type: 'string' },
+          message: { type: 'string' },
+          createdAt: { type: 'string', format: 'date-time' },
+          isRead: { type: 'boolean' },
+          status: { type: 'string', enum: ['pending', 'sent', 'failed'] }
+        }
+      },
       Error: {
         type: 'object',
         properties: {
