@@ -10,10 +10,7 @@ describe('Transaction Controller', () => {
   let transactionId;
 
   beforeAll(async () => {
-    await mongoose.connect(global.__MONGO_URI__, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URI);
 
     const user = new User({
       username: 'testuser',

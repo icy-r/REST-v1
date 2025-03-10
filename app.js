@@ -10,7 +10,12 @@ const mongoURI = process.env.MONGO_URI;
 
 console.log(mongoURI);
 
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+if (!mongoURI) {
+  console.error("MongoDB connection URI is not defined in environment variables.");
+  process.exit(1);
+}
+
+mongoose.connect(mongoURI);
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));

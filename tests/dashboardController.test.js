@@ -25,8 +25,7 @@ describe('Dashboard Controller', () => {
   let userId;
 
   beforeAll(async () => {
-    const mongoURI = global.__MONGO_URI__;
-    await mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect(process.env.MONGO_URI);
 
     const user = await User.create({
       username: 'testuser',
