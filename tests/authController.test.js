@@ -228,3 +228,5 @@ describe("Auth Controller", () => {
     });
   });
 });
+
+module.exports = app;

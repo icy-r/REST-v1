@@ -25,7 +25,7 @@ describe('Dashboard Controller', () => {
   let userId;
 
   beforeAll(async () => {
-    const mongoURI = 'mongodb://localhost:27017/testdb';
+    const mongoURI = global.__MONGO_URI__;
     await mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
     const user = await User.create({
@@ -106,3 +106,5 @@ describe('Dashboard Controller', () => {
     });
   });
 });
+
+module.exports = app;
