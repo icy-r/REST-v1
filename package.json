@@ -6,7 +6,11 @@
   "scripts": {
     "test": "jest",
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "test:performance": "artillery run tests/performance.test.js",
+    "test:security": "owasp-zap-cli quick-scan http://localhost:3000",
+    "test:unit": "jest --testPathPattern=tests/unit",
+    "test:integration": "jest --testPathPattern=tests/integration"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +29,8 @@
   },
   "devDependencies": {
     "jest": "^29.0.0",
-    "supertest": "^6.0.0"
+    "supertest": "^6.0.0",
+    "artillery": "^1.6.0-29",
+    "owasp-zap-cli": "^1.0.0"
   }
 }

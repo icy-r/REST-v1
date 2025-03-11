@@ -1,11 +1,9 @@
 const request = require('supertest');
 const express = require('express');
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 const dashboardController = require('../controllers/dashboardController');
 const User = require('../models/User');
-const Transaction = require('../models/Transaction');
-const Budget = require('../models/Budget');
-const Goal = require('../models/Goal');
 const { verifyToken } = require('../middleware/jwtauth');
 
 const app = express();
@@ -105,5 +103,3 @@ describe('Dashboard Controller', () => {
     });
   });
 });
-
-module.exports = app;

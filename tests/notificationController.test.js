@@ -110,4 +110,22 @@ describe('Notification Controller', () => {
       expect(res.body).toHaveProperty('success', true);
     });
   });
+
+  describe('POST /notifications/send', () => {
+    it('should send a notification to a user', async () => {
+      const res = await request(app)
+        .post('/api/notifications/send')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          userId,
+          type: 'info',
+          message: 'This is a test notification',
+        });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('success', true);
+      expect(res.body.data).toHaveProperty('type', 'info');
+      expect(res.body.data).toHaveProperty('message', 'This is a test notification');
+    });
+  });
 });
