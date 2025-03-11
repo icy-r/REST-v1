@@ -5,25 +5,17 @@ const User = require("../models/User");
 const Budget = require("../models/Budget");
 const Transaction = require("../models/Transaction");
 const Goal = require("../models/Goal");
-const { verifyToken } = require("../middleware/jwtauth");
+const { MongoMemoryServer } = require("mongodb-memory-server");
 
-// Use a test database URI
-const MONGO_TEST_URI =
-  process.env.MONGO_TEST_URI || "mongodb://localhost:27017/test-db";
+let mongoServer;
 
-// Store the IDs so we can access them in the tests
-let testUserId, testAdminId;
-
+// Create test IDs before mocking
+const testUserId = new mongoose.Types.ObjectId().toString();
+const testAdminId = new mongoose.Types.ObjectId().toString();
+const mockUserId = new mongoose.Types.ObjectId().toString();
+const mockAdminId = new mongoose.Types.ObjectId().toString();
 // Mock JWT verification
 jest.mock("../middleware/jwtauth", () => {
-  // Create the IDs inside the mock factory function
-  const mockUserId = new mongoose.Types.ObjectId().toString();
-  const mockAdminId = new mongoose.Types.ObjectId().toString();
-
-  // Store the IDs for later use
-  testUserId = mockUserId;
-  testAdminId = mockAdminId;
-
   return {
     verifyToken: jest.fn((req, res, next) => {
       if (req.headers.authorization === "Bearer valid-user-token") {
@@ -39,22 +31,28 @@ jest.mock("../middleware/jwtauth", () => {
   };
 });
 
+jest.setTimeout(60000);
+
 describe("Dashboard Controller", () => {
   let userId, adminId;
 
   beforeAll(async () => {
     try {
+      mongoServer = await MongoMemoryServer.create();
+      const uri = mongoServer.getUri();
+
       // Disconnect first if there's an active connection
       if (mongoose.connection.readyState !== 0) {
         await mongoose.disconnect();
       }
 
       // Connect to the test database
-      await mongoose.connect(MONGO_TEST_URI);
+      await mongoose.connect(uri);
 
       // Create test users
       const user = await User.create({
         _id: testUserId, // Use the ID created in the mock
+        name: "Test User",
         username: "testuser",
         email: "testuser@example.com",
         password: "password123",
@@ -64,6 +62,7 @@ describe("Dashboard Controller", () => {
 
       const admin = await User.create({
         _id: testAdminId, // Use the ID created in the mock
+        name: "Test Admin",
         username: "testadmin",
         email: "testadmin@example.com",
         password: "adminpass123",
@@ -74,7 +73,8 @@ describe("Dashboard Controller", () => {
       // Create test data
       await Budget.create({
         _id: new mongoose.Types.ObjectId(),
-        user: userId,
+        userId: userId,
+        name: "Food Budget",
         amount: 1000,
         category: "Food",
         period: "monthly",
@@ -82,7 +82,7 @@ describe("Dashboard Controller", () => {
 
       await Transaction.create({
         _id: new mongoose.Types.ObjectId(),
-        user: userId,
+        userId: userId,
         amount: 50,
         category: "Food",
         type: "expense",
@@ -91,11 +91,11 @@ describe("Dashboard Controller", () => {
 
       await Goal.create({
         _id: new mongoose.Types.ObjectId(),
-        user: userId,
+        userId: userId,
         name: "Save for vacation",
         targetAmount: 2000,
         currentAmount: 500,
-        deadline: new Date("2024-12-31"),
+        targetDate: new Date("2024-12-31"),
       });
     } catch (err) {
       console.error("Test setup error:", err);
@@ -109,6 +109,9 @@ describe("Dashboard Controller", () => {
     await Transaction.deleteMany({});
     await Goal.deleteMany({});
     await mongoose.connection.close();
+    if (mongoServer) {
+      await mongoServer.stop();
+    }
   });
 
   describe("GET /api/dashboard", () => {
