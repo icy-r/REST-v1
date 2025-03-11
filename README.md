@@ -104,10 +104,3 @@ The API is fully documented using Swagger/OpenAPI. Once the application is runni
    pnpm test
    ```
 
-3. For unit testing, use libraries such as Jest or Mocha with Chai for Express JS, and JUnit and Mockito for Spring Boot.
-
-4. For integration testing, ensure different parts of the application work together seamlessly, including interactions between controllers, services, and the MongoDB database.
-
-5. Perform security tests to identify vulnerabilities within your application using tools like OWASP ZAP or Burp Suite.
-
-6. Evaluate the API's performance under various loads using tools like JMeter (for Spring Boot applications) or Artillery.io (for Express JS applications).
