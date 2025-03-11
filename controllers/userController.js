@@ -106,6 +106,14 @@ exports.updateDetails = async (req, res) => {
         Object.keys(fieldsToUpdate).forEach(key => 
             fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key]
         );
+
+        // Check if any fields are missing
+        if (!fieldsToUpdate.name || !fieldsToUpdate.email) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide all required fields'
+            });
+        }
         
         const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
             new: true,
@@ -130,6 +138,14 @@ exports.updatePassword = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('+password');
         
+        // Check if currentPassword and newPassword are provided
+        if (!req.body.currentPassword || !req.body.newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide current and new password'
+            });
+        }
+
         // Check current password
         if (!(await user.matchPassword(req.body.currentPassword))) {
             return res.status(401).json({
