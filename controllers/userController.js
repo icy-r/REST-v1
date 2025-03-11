@@ -127,47 +127,79 @@ exports.updateDetails = async (req, res) => {
 
 // Update password
 exports.updatePassword = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select('+password');
-        
-        // Check current password
-        if (!(await user.matchPassword(req.body.currentPassword))) {
-            return res.status(401).json({
-                success: false,
-                message: 'Current password is incorrect'
-            });
-        }
-        
-        user.password = req.body.newPassword;
-        await user.save();
-        
-        sendTokenResponse(user, 200, res);
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error updating password',
-            error: error.message
-        });
+  try {
+    if (!req.body.currentPassword || !req.body.newPassword) {
+      return res.status(400).json({
+        success: false,
+        error: "Please provide current and new password",
+      });
     }
+
+    const user = await User.findById(req.user.id).select("+password");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    // Verify current password
+    if (!(await user.matchPassword(req.body.currentPassword))) {
+      return res.status(401).json({
+        success: false,
+        error: "Current password is incorrect",
+      });
+    }
+
+    // Update password
+    user.password = req.body.newPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    console.error("Password update error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Error updating password",
+    });
+  }
 };
 
 // Admin: Get all users
 exports.getUsers = async (req, res) => {
-    try {
-        const users = await User.find();
-        
-        res.status(200).json({
-            success: true,
-            count: users.length,
-            data: users
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Error getting users',
-            error: error.message
-        });
-    }
+  try {
+    const users = await User.find();
+
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      data: users,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error getting users",
+      error: error.message,
+    });
+  }
+};
+
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+    res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Server Error",
+    });
+  }
 };
 
 // Helper function to get token from model, create cookie and send response

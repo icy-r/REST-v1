@@ -40,59 +40,80 @@ exports.getAllCategories = async (req, res) => {
 
 // Get single category
 exports.getCategory = async (req, res) => {
-    try {
-        const category = await Category.findById(req.params.id);
-        
-        if (!category) {
-            return res.status(404).json({ message: 'Category not found' });
-        }
-        
-        return res.status(200).json(category);
-    } catch (error) {
-        return res.status(500).json({ message: 'Error fetching category', error: error.message });
+  try {
+    // Check if id is valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: "Category not found" });
     }
+
+    const category = await Category.findById(req.params.id);
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    return res.status(200).json(category);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error fetching category", error: error.message });
+  }
 };
 
 // Update category (admin only)
 exports.updateCategory = async (req, res) => {
-    try {
-        const { name, description } = req.body;
-        
-        const category = await Category.findById(req.params.id);
-        
-        if (!category) {
-            return res.status(404).json({ message: 'Category not found' });
-        }
-        
-        if (name) category.name = name;
-        if (description !== undefined) category.description = description;
-        
-        await category.save();
-        
-        return res.status(200).json({
-            message: 'Category updated successfully',
-            category
-        });
-    } catch (error) {
-        return res.status(500).json({ message: 'Error updating category', error: error.message });
+  try {
+    // Check if id is valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: "Category not found" });
     }
+
+    const { name, description } = req.body;
+
+    const category = await Category.findById(req.params.id);
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    if (name) category.name = name;
+    if (description !== undefined) category.description = description;
+
+    await category.save();
+
+    return res.status(200).json({
+      message: "Category updated successfully",
+      category,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error updating category", error: error.message });
+  }
 };
 
 // Delete category (admin only)
 exports.deleteCategory = async (req, res) => {
-    try {
-        const category = await Category.findById(req.params.id);
-        
-        if (!category) {
-            return res.status(404).json({ message: 'Category not found' });
-        }
-        
-        await Category.findByIdAndDelete(req.params.id);
-        
-        return res.status(200).json({ message: 'Category deleted successfully' });
-    } catch (error) {
-        return res.status(500).json({ message: 'Error deleting category', error: error.message });
+  try {
+    // Check if id is valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: "Category not found" });
     }
+
+    const category = await Category.findById(req.params.id);
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    await Category.findByIdAndDelete(req.params.id);
+
+    return res.status(200).json({ message: "Category deleted successfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error deleting category", error: error.message });
+  }
 };
 
 process.on('unhandledRejection', (reason, promise) => {

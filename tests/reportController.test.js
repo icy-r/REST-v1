@@ -17,18 +17,18 @@ describe('Report Controller', () => {
     };
   });
 
-  describe('generateReport', () => {
-    it('should generate a report', async () => {
+  describe("generateReport", () => {
+    it("should generate a report", async () => {
       req.body = {
-        reportType: 'spending-by-category',
-        startDate: '2023-01-01',
-        endDate: '2023-01-31',
-        filters: {}
+        reportType: "spending-by-category",
+        startDate: "2023-01-01",
+        endDate: "2023-01-31",
+        filters: {},
       };
 
       Transaction.find = jest.fn().mockResolvedValue([
-        { type: 'expense', category: 'Food', amount: 100 },
-        { type: 'expense', category: 'Transport', amount: 50 }
+        { type: "expense", category: "Food", amount: 100 },
+        { type: "expense", category: "Transport", amount: 50 },
       ]);
 
       const saveMock = jest.fn();
@@ -39,40 +39,40 @@ describe('Report Controller', () => {
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
-        report: expect.any(Object)
+        report: expect.any(Object),
       });
       expect(saveMock).toHaveBeenCalled();
     });
 
-    it('should handle errors', async () => {
+    it("should handle errors", async () => {
       req.body = {
-        reportType: 'spending-by-category',
-        startDate: '2023-01-01',
-        endDate: '2023-01-31',
-        filters: {}
+        reportType: "spending-by-category",
+        startDate: "2023-01-01",
+        endDate: "2023-01-31",
+        filters: {},
       };
 
-      Transaction.find = jest.fn().mockRejectedValue(new Error('Error'));
+      Transaction.find = jest.fn().mockRejectedValue(new Error("Error"));
 
       await reportController.generateReport(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Error generating report',
-        error: 'Error'
+        message: "Error generating report",
+        error: "Error",
       });
     });
   });
 
-  describe('getReportById', () => {
-    it('should get a report by ID', async () => {
-      req.params = { id: 'reportId' };
+  describe("getReportById", () => {
+    it("should get a report by ID", async () => {
+      req.params = { id: "reportId" };
 
       Report.findById = jest.fn().mockResolvedValue({
-        userId: 'userId',
-        reportType: 'spending-by-category',
-        data: {}
+        userId: "userId",
+        reportType: "spending-by-category",
+        data: {},
       });
 
       await reportController.getReportById(req, res);
@@ -80,12 +80,12 @@ describe('Report Controller', () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
-        report: expect.any(Object)
+        report: expect.any(Object),
       });
     });
 
-    it('should handle report not found', async () => {
-      req.params = { id: 'reportId' };
+    it("should handle report not found", async () => {
+      req.params = { id: "reportId" };
 
       Report.findById = jest.fn().mockResolvedValue(null);
 
@@ -94,17 +94,17 @@ describe('Report Controller', () => {
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Report not found'
+        message: "Report not found",
       });
     });
 
-    it('should handle unauthorized access', async () => {
-      req.params = { id: 'reportId' };
+    it("should handle unauthorized access", async () => {
+      req.params = { id: "reportId" };
 
       Report.findById = jest.fn().mockResolvedValue({
-        userId: 'anotherUserId',
-        reportType: 'spending-by-category',
-        data: {}
+        userId: "anotherUserId",
+        reportType: "spending-by-category",
+        data: {},
       });
 
       await reportController.getReportById(req, res);
@@ -112,33 +112,39 @@ describe('Report Controller', () => {
       expect(res.status).toHaveBeenCalledWith(403);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Unauthorized to access this report'
+        message: "Unauthorized to access this report",
       });
     });
 
-    it('should handle errors', async () => {
-      req.params = { id: 'reportId' };
+    it("should handle errors", async () => {
+      req.params = { id: "reportId" };
 
-      Report.findById = jest.fn().mockRejectedValue(new Error('Error'));
+      Report.findById = jest.fn().mockRejectedValue(new Error("Error"));
 
       await reportController.getReportById(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Error retrieving report',
-        error: 'Error'
+        message: "Error retrieving report",
+        error: "Error",
       });
     });
   });
 
-  describe('getUserReports', () => {
-    it('should get all reports for a user', async () => {
-      req.params = { userId: 'userId' };
+  describe("getUserReports", () => {
+    it("should get all reports for a user", async () => {
+      req.params = { userId: "userId" };
 
-      Report.find = jest.fn().mockResolvedValue([
-        { userId: 'userId', reportType: 'spending-by-category', data: {} }
-      ]);
+      const mockSortFunction = jest
+        .fn()
+        .mockResolvedValue([
+          { userId: "userId", reportType: "spending-by-category", data: {} },
+        ]);
+
+      Report.find = jest.fn().mockReturnValue({
+        sort: mockSortFunction,
+      });
 
       await reportController.getUserReports(req, res);
 
@@ -146,22 +152,28 @@ describe('Report Controller', () => {
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         count: 1,
-        reports: expect.any(Array)
+        reports: expect.any(Array),
       });
     });
 
-    it('should handle errors', async () => {
-      req.params = { userId: 'userId' };
+    it("should handle errors", async () => {
+      req.params = { userId: "userId" };
 
-      Report.find = jest.fn().mockRejectedValue(new Error('Error'));
+      Report.find = jest.fn().mockReturnValue({
+        sort: jest
+          .fn()
+          .mockRejectedValue(
+            new Error("Report.find(...).sort is not a function")
+          ),
+      });
 
       await reportController.getUserReports(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Error retrieving reports',
-        error: 'Error'
+        message: "Error retrieving reports",
+        error: "Report.find(...).sort is not a function",
       });
     });
   });

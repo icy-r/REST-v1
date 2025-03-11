@@ -1,48 +1,55 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const mongoose = require("mongoose");
 
-// Check if user is an admin
-exports.isAdmin = async (req, res, next) => {
+// Middleware to check if user is admin
+exports.isAdmin = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     next();
   } else {
-    return res.status(403).json({
+    res.status(403).json({
       success: false,
-      message: "Access denied - Admin authorization required",
+      message: "Access denied - Admin only",
     });
   }
 };
 
-// Check if user is the resource owner
-exports.isResourceOwner = (Model) => async (req, res, next) => {
-  try {
-    const resource = await Model.findById(req.params.id);
+// Middleware to check if user owns the resource or is admin
+exports.isResourceOwner = (model) => {
+  return async (req, res, next) => {
+    try {
+      // Check if the id is a valid ObjectId before querying
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return next(); // Let the controller handle invalid ObjectIds
+      }
 
-    if (!resource) {
-      return res.status(404).json({
+      const resource = await model.findById(req.params.id);
+
+      if (!resource) {
+        return next(); // Let the controller handle "not found" cases
+      }
+
+      if (
+        (resource.userId && resource.userId.toString() === req.user.id) ||
+        req.user.role === "admin"
+      ) {
+        next();
+      } else {
+        res.status(403).json({
+          success: false,
+          message: "Access denied",
+        });
+      }
+    } catch (error) {
+      if (error.name === "CastError") {
+        return next(); // Let the controller handle CastErrors
+      }
+      console.error(error);
+      res.status(500).json({
         success: false,
-        message: "Resource not found",
+        message: "Server error",
+        error: error.message,
       });
     }
-
-    // Check if user owns resource or is admin
-    if (
-      (resource.userId && resource.userId.toString() === req.user.id) ||
-      req.user.role === "admin"
-    ) {
-      next();
-    } else {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied - Not authorized to access this resource",
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
-  }
+  };
 };

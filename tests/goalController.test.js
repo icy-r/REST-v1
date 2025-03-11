@@ -117,13 +117,32 @@ describe('Goal Controller', () => {
   });
 
   describe('DELETE /api/goals/:id', () => {
-    it('should delete a goal', async () => {
+    let deleteGoalId;
+
+    beforeEach(async () => {
+      // Create a new goal specifically for the delete test
+      const newGoal = await Goal.create({
+        userId,
+        name: "Goal to Delete",
+        targetAmount: 500,
+        currentAmount: 0,
+        targetDate: new Date("2023-12-31"),
+      });
+
+      deleteGoalId = newGoal._id;
+    });
+
+    it("should delete a goal", async () => {
       const res = await request(app)
-        .delete(`/api/goals/${goalId}`)
-        .set('Authorization', `Bearer ${token}`);
+        .delete(`/api/goals/${deleteGoalId}`)
+        .set("Authorization", `Bearer ${token}`);
 
       expect(res.statusCode).toEqual(200);
-      expect(res.body).toHaveProperty('data', {});
+      expect(res.body).toHaveProperty("success", true);
+
+      // Verify the goal was actually deleted
+      const deletedGoal = await Goal.findById(deleteGoalId);
+      expect(deletedGoal).toBeNull();
     });
   });
 });
