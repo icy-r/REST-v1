@@ -58,6 +58,16 @@ app.get("/", (_req, res) => {
   res.redirect("/api-docs");
 });
 
+// Route to handle /api/trigger-error for testing server errors
+app.get("/api/trigger-error", (_req, res) => {
+  throw new Error("This is a test error");
+});
+
+// Middleware to handle 404 errors
+app.use((req, res, next) => {
+  res.status(404).send("Not Found");
+});
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something broke!");

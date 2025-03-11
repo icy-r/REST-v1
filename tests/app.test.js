@@ -20,12 +20,13 @@ describe('Integration Tests for app.js', () => {
   it('should return 404 for unknown routes', async () => {
     const res = await request(app).get('/unknown-route');
     expect(res.statusCode).toEqual(404);
+    expect(res.text).toEqual('Not Found');
   });
 
   it('should return 500 for server errors', async () => {
     const res = await request(app).get('/api/trigger-error');
     expect(res.statusCode).toEqual(500);
-    expect(res.text).toEqual('Something broke!');
+    expect(res.text).toEqual('This is a test error');
   });
 
   it('should return 200 for /api/auth route', async () => {

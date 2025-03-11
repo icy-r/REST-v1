@@ -74,6 +74,19 @@ describe('User Controller', () => {
 
       expect(res.statusCode).toEqual(401);
     });
+
+    it('should return 400 if required fields are missing', async () => {
+      const res = await request(app)
+        .put('/api/users/update-details')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          name: 'Updated User'
+        });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toEqual('Please provide all required fields');
+    });
   });
 
   describe('PUT /api/users/update-password', () => {
@@ -111,6 +124,19 @@ describe('User Controller', () => {
         });
 
       expect(res.statusCode).toEqual(401);
+    });
+
+    it('should return 400 if required fields are missing', async () => {
+      const res = await request(app)
+        .put('/api/users/update-password')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          newPassword: 'newpassword'
+        });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toEqual('Please provide current and new password');
     });
   });
 
