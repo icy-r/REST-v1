@@ -1,13 +1,25 @@
 const request = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
+require("dotenv").config();
 
-describe('Integration Tests for app.js', () => {
+describe("Integration Tests for app.js", () => {
+  let server;
+
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI);
+    // Use a separate test database for tests
+    const testDBUri = process.env.MONGO_TEST_URI || process.env.MONGO_URI;
+    try {
+      await mongoose.connect(testDBUri);
+      // Create a separate server instance for testing
+      server = app.listen(0); // Use port 0 to get a random available port
+    } catch (err) {
+      console.error("Error connecting to test database:", err);
+    }
   });
 
   afterAll(async () => {
+    if (server) await server.close();
     await mongoose.connection.close();
   });
 
