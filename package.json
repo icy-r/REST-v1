@@ -41,7 +41,8 @@
       "mongodb-memory-server"
     ],
     "onlyBuiltDependencies": [
-      "mongodb-memory-server"
+      "mongodb-memory-server",
+      "snyk"
     ]
   }
 }
