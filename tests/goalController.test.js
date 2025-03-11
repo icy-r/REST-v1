@@ -16,10 +16,11 @@ describe('Goal Controller', () => {
 
     // Create a test user
     const user = await User.create({
-      username: 'testuser',
-      email: 'testuser@example.com',
-      password: 'password123',
-      name: 'Test User',
+      username: "testuser",
+      email: "testuser@example.com",
+      password: "password123",
+      name: "Test User",
+      role: "user",
     });
 
     userId = user._id;
