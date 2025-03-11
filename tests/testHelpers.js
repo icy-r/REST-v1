@@ -16,9 +16,10 @@ async function createUniqueTestUser(username = null) {
     const user = new User({
       username: uniqueUsername,
       email: `${uniqueUsername}@example.com`,
-      password: 'Password123!',
-      firstName: 'Test',
-      lastName: 'User'
+      password: "Password123!",
+      firstName: "Test",
+      lastName: "User",
+      name: "Test User", // Adding the required name field
     });
     
     await user.save();

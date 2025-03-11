@@ -3,39 +3,52 @@ const Category = require('../models/Category');
 
 // Create new category (admin only)
 exports.createCategory = async (req, res) => {
-    try {
-        const { name, description } = req.body;
-        
-        const existingCategory = await Category.findOne({ name });
-        if (existingCategory) {
-            return res.status(409).json({ message: 'Category with this name already exists' });
-        }
-        
-        const category = new Category({
-            _id: new mongoose.Types.ObjectId(),
-            name,
-            description
-        });
-        
-        await category.save();
-        
-        return res.status(201).json({
-            message: 'Category created successfully',
-            category
-        });
-    } catch (error) {
-        return res.status(500).json({ message: 'Error creating category', error: error.message });
+  try {
+    // Check if user is admin
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Access denied - Admin only" });
     }
+
+    const { name, description } = req.body;
+
+    const existingCategory = await Category.findOne({ name });
+    if (existingCategory) {
+      return res
+        .status(409)
+        .json({ message: "Category with this name already exists" });
+    }
+
+    const category = new Category({
+      _id: new mongoose.Types.ObjectId(),
+      name,
+      description,
+    });
+
+    await category.save();
+
+    return res.status(201).json({
+      message: "Category created successfully",
+      category,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error creating category", error: error.message });
+  }
 };
 
 // Get all categories
 exports.getAllCategories = async (req, res) => {
-    try {
-        const categories = await Category.find().sort({ name: 1 });
-        return res.status(200).json(categories);
-    } catch (error) {
-        return res.status(500).json({ message: 'Error fetching categories', error: error.message });
-    }
+  try {
+    const categories = await Category.find().sort({ name: 1 });
+    return res.status(200).json(categories);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error fetching categories", error: error.message });
+  }
 };
 
 // Get single category
@@ -63,6 +76,13 @@ exports.getCategory = async (req, res) => {
 // Update category (admin only)
 exports.updateCategory = async (req, res) => {
   try {
+    // Check if user is admin
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Access denied - Admin only" });
+    }
+
     // Check if id is valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(404).json({ message: "Category not found" });
@@ -95,6 +115,13 @@ exports.updateCategory = async (req, res) => {
 // Delete category (admin only)
 exports.deleteCategory = async (req, res) => {
   try {
+    // Check if user is admin
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Access denied - Admin only" });
+    }
+
     // Check if id is valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(404).json({ message: "Category not found" });

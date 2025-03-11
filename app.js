@@ -43,6 +43,7 @@ const goalRoutes = require("./routes/goal_routes");
 const categoryRoutes = require("./routes/category_routes");
 const reportRoutes = require("./routes/report_routes");
 const dashboardRoutes = require("./routes/dashboard_routes");
+const notificationsRoutes = require('./routes/notification_routes'); // Added notifications routes
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -52,6 +53,7 @@ app.use("/api/goals", goalRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use('/api/notifications', notificationsRoutes); // Register notifications endpoints
 
 // Updated home route to redirect to API docs
 app.get("/", (_req, res) => {
