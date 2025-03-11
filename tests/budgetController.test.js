@@ -61,6 +61,38 @@ describe('Budget Controller', () => {
 
       budgetId = res.body.data._id;
     });
+
+    it('should not create a budget without a name', async () => {
+      const res = await request(app)
+        .post('/api/budgets')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          amount: 1000,
+          currency: 'USD',
+          period: 'monthly',
+          category: 'Test Category',
+        });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body).toHaveProperty('success', false);
+      expect(res.body).toHaveProperty('message', 'Please provide a budget name');
+    });
+
+    it('should not create a budget without an amount', async () => {
+      const res = await request(app)
+        .post('/api/budgets')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          name: 'Test Budget',
+          currency: 'USD',
+          period: 'monthly',
+          category: 'Test Category',
+        });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body).toHaveProperty('success', false);
+      expect(res.body).toHaveProperty('message', 'Please provide a budget amount');
+    });
   });
 
   describe('GET /api/budgets', () => {
@@ -90,6 +122,16 @@ describe('Budget Controller', () => {
       expect(res.body.data).toHaveProperty('period', 'monthly');
       expect(res.body.data).toHaveProperty('category', 'Test Category');
     });
+
+    it('should return 404 if budget not found', async () => {
+      const res = await request(app)
+        .get('/api/budgets/invalidId')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.statusCode).toEqual(404);
+      expect(res.body).toHaveProperty('success', false);
+      expect(res.body).toHaveProperty('message', 'Budget not found');
+    });
   });
 
   describe('PUT /api/budgets/:id', () => {
@@ -107,6 +149,20 @@ describe('Budget Controller', () => {
       expect(res.body.data).toHaveProperty('name', 'Updated Budget');
       expect(res.body.data).toHaveProperty('amount', 1500);
     });
+
+    it('should return 404 if budget not found', async () => {
+      const res = await request(app)
+        .put('/api/budgets/invalidId')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          name: 'Updated Budget',
+          amount: 1500,
+        });
+
+      expect(res.statusCode).toEqual(404);
+      expect(res.body).toHaveProperty('success', false);
+      expect(res.body).toHaveProperty('message', 'Budget not found');
+    });
   });
 
   describe('DELETE /api/budgets/:id', () => {
@@ -118,6 +174,16 @@ describe('Budget Controller', () => {
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty('success', true);
       expect(res.body).toHaveProperty('message', 'Budget deleted successfully');
+    });
+
+    it('should return 404 if budget not found', async () => {
+      const res = await request(app)
+        .delete('/api/budgets/invalidId')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.statusCode).toEqual(404);
+      expect(res.body).toHaveProperty('success', false);
+      expect(res.body).toHaveProperty('message', 'Budget not found');
     });
   });
 });

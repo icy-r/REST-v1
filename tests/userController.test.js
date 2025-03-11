@@ -113,4 +113,22 @@ describe('User Controller', () => {
       expect(res.statusCode).toEqual(401);
     });
   });
+
+  describe('GET /api/users', () => {
+    it('should return all users', async () => {
+      const res = await request(app)
+        .get('/api/users')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toBeInstanceOf(Array);
+    });
+
+    it('should return 401 if not authenticated', async () => {
+      const res = await request(app).get('/api/users');
+
+      expect(res.statusCode).toEqual(401);
+    });
+  });
 });
