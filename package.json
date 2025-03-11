@@ -8,10 +8,11 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "test:performance": "artillery run tests/performance.yml",
-    "test:security": "node scripts/security-test.js",
+    "test:security": "snyk test",
     "test:unit": "jest --testPathPattern=tests/unit",
     "test:integration": "jest --testPathPattern=tests/integration",
     "test:performance:withserver": "node -e \"const { spawn } = require('child_process'); const server = spawn('pnpm', ['run', 'dev'], {stdio: 'inherit'}); setTimeout(() => { const test = spawn('pnpm', ['test', 'tests/performance.test.js'], {stdio: 'inherit'}).on('close', () => server.kill()); }, 3000);\"",
+    "test:rate-limit": "jest --runInBand --testPathPattern=tests/ratelimit --detectOpenHandles",
     "snyk:auth": "snyk auth"
   },
   "keywords": [],
@@ -28,10 +29,16 @@
     "mongoose": "^8.11.0",
     "nodemon": "^3.1.9",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.0"
+    "swagger-ui-express": "^5.0.0",
+    "uuid": "^8.3.2",
+    "express-rate-limit": "7.5.0",
+    "helmet": "latest",
+    "cors": "2.8.5",
+    "morgan": "1.10.0",
+    "compression": "1.7.4"
   },
   "devDependencies": {
-    "artillery": "^1.6.0-29",
+    "artillery": "latest",
     "jest": "^29.0.0",
     "snyk": "^1.1130.0",
     "supertest": "^6.0.0"

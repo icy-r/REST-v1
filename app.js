@@ -4,6 +4,15 @@ const mongoose = require("mongoose");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
 
+//for ip logging and rate limiting
+const rateLimit = require("express-rate-limit");
+const morgan = require("morgan");
+const fs = require("fs");
+const path = require("path");
+
+//to run cron jobs
+require('./utils/cronjobs');
+
 const app = express();
 const port = process.env.PORT ? process.env.PORT : 3000;
 const mongoURI = process.env.MONGO_URI;
@@ -23,7 +32,31 @@ db.once("open", function () {
   console.log("Connected to MongoDB");
 });
 
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // limit each IP to 10 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skipSuccessfulRequests: false, // Don't count successful requests
+  handler: (req, res) => {
+    res.status(429).json({
+      message: "Too many requests from this IP, please try again after 15 minutes"
+    });
+  }
+});
+
+// create a write stream (in append mode)
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
+
+// setup the logger
+app.use(morgan('combined', { stream: accessLogStream }));
+
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// Apply rate limiter to the /api/test endpoint
+app.use('/api/test', limiter);
 
 // API Documentation
 app.use(
@@ -54,6 +87,11 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use('/api/notifications', notificationsRoutes); // Register notifications endpoints
+
+// Add a test route for rate limiting tests
+app.get('/api/test', (req, res) => {
+  res.status(200).send('OK');
+});
 
 // Updated home route to redirect to API docs
 app.get("/", (_req, res) => {
