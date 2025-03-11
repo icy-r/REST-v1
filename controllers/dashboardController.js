@@ -91,105 +91,127 @@ exports.getUserDashboard = async (req, res) => {
         const userId = req.user.id;
         
         // Get recent transactions
-        const recentTransactions = await Transaction.find({ userId })
-            .sort({ date: -1 })
-            .limit(5);
-        
+        const recentTransactions = await Transaction.find({ userId: userId })
+          .sort({ date: -1 })
+          .limit(5);
+
         // Get transaction summary
         const transactionSummary = await Transaction.aggregate([
-            { $match: { userId: mongoose.Types.ObjectId(userId) } },
-            { 
-                $group: { 
-                    _id: null, 
-                    totalIncome: { 
-                        $sum: { 
-                            $cond: [{ $eq: ['$type', 'income'] }, '$amount', 0] 
-                        } 
-                    },
-                    totalExpense: { 
-                        $sum: { 
-                            $cond: [{ $eq: ['$type', 'expense'] }, '$amount', 0] 
-                        } 
-                    }
-                } 
-            }
+          { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+          {
+            $group: {
+              _id: null,
+              totalIncome: {
+                $sum: {
+                  $cond: [{ $eq: ["$type", "income"] }, "$amount", 0],
+                },
+              },
+              totalExpense: {
+                $sum: {
+                  $cond: [{ $eq: ["$type", "expense"] }, "$amount", 0],
+                },
+              },
+            },
+          },
         ]);
-        
+
         // Calculate balance
-        const balance = transactionSummary.length > 0 
-            ? transactionSummary[0].totalIncome - transactionSummary[0].totalExpense 
+        const balance =
+          transactionSummary.length > 0
+            ? transactionSummary[0].totalIncome -
+              transactionSummary[0].totalExpense
             : 0;
-        
+
         // Get active budgets
-        const budgets = await Budget.find({ userId })
-            .sort({ createdAt: -1 });
-            
+        const budgets = await Budget.find({ userId }).sort({ createdAt: -1 });
+
         // Get budget utilization
         const budgetUtilization = await Promise.all(
-            budgets.map(async (budget) => {
-                // Calculate spending for this budget category
-                const spending = await Transaction.aggregate([
-                    { 
-                        $match: { 
-                            userId: mongoose.Types.ObjectId(userId),
-                            category: budget.category,
-                            type: 'expense',
-                            date: { $gte: budget.startDate, $lte: budget.endDate || new Date() }
-                        } 
-                    },
-                    { $group: { _id: null, total: { $sum: '$amount' } } }
-                ]);
-                
-                const spentAmount = spending.length > 0 ? spending[0].total : 0;
-                const percentage = budget.amount > 0 ? (spentAmount / budget.amount) * 100 : 0;
-                
-                return {
-                    budgetId: budget._id,
-                    name: budget.name,
-                    amount: budget.amount,
-                    spentAmount,
-                    percentage: parseFloat(percentage.toFixed(2)),
-                    remaining: budget.amount - spentAmount
-                };
-            })
+          budgets.map(async (budget) => {
+            // Calculate spending for this budget category
+            const spending = await Transaction.aggregate([
+              {
+                $match: {
+                  userId: mongoose.Types.ObjectId(userId),
+                  category: budget.category,
+                  type: "expense",
+                  date: {
+                    $gte: budget.startDate,
+                    $lte: budget.endDate || new Date(),
+                  },
+                },
+              },
+              { $group: { _id: null, total: { $sum: "$amount" } } },
+            ]);
+
+            const spentAmount = spending.length > 0 ? spending[0].total : 0;
+            const percentage =
+              budget.amount > 0 ? (spentAmount / budget.amount) * 100 : 0;
+
+            return {
+              budgetId: budget._id,
+              name: budget.name,
+              amount: budget.amount,
+              spentAmount,
+              percentage: parseFloat(percentage.toFixed(2)),
+              remaining: budget.amount - spentAmount,
+            };
+          })
         );
-        
+
         // Get goals
-        const goals = await Goal.find({ userId })
-            .sort({ targetDate: 1 });
-            
+        const goals = await Goal.find({ userId }).sort({ targetDate: 1 });
+
         // Get goal progress
-        const goalProgress = goals.map(goal => ({
-            goalId: goal._id,
-            name: goal.name,
-            targetAmount: goal.targetAmount,
-            currentAmount: goal.currentAmount,
-            percentage: parseFloat(((goal.currentAmount / goal.targetAmount) * 100).toFixed(2)),
-            remaining: goal.targetAmount - goal.currentAmount,
-            targetDate: goal.targetDate,
-            status: goal.status
+        const goalProgress = goals.map((goal) => ({
+          goalId: goal._id,
+          name: goal.name,
+          targetAmount: goal.targetAmount,
+          currentAmount: goal.currentAmount,
+          percentage: parseFloat(
+            ((goal.currentAmount / goal.targetAmount) * 100).toFixed(2)
+          ),
+          remaining: goal.targetAmount - goal.currentAmount,
+          targetDate: goal.targetDate,
+          status: goal.status,
         }));
-        
+
         res.status(200).json({
-            success: true,
-            data: {
-                financialSummary: {
-                    balance,
-                    income: transactionSummary.length > 0 ? transactionSummary[0].totalIncome : 0,
-                    expense: transactionSummary.length > 0 ? transactionSummary[0].totalExpense : 0
-                },
-                recentTransactions,
-                budgetSummary: {
-                    totalBudgets: budgets.length,
-                    budgetUtilization
-                },
-                goalSummary: {
-                    totalGoals: goals.length,
-                    activeGoals: goals.filter(g => g.status === 'in-progress').length,
-                    completedGoals: goals.filter(g => g.status === 'completed').length,
-                    goalProgress
-                }
-            }
+          success: true,
+          data: {
+            financialSummary: {
+              balance,
+              income:
+                transactionSummary.length > 0
+                  ? transactionSummary[0].totalIncome
+                  : 0,
+              expense:
+                transactionSummary.length > 0
+                  ? transactionSummary[0].totalExpense
+                  : 0,
+            },
+            recentTransactions,
+            budgetSummary: {
+              totalBudgets: budgets.length,
+              budgetUtilization,
+            },
+            goalSummary: {
+              totalGoals: goals.length,
+              activeGoals: goals.filter((g) => g.status === "in-progress")
+                .length,
+              completedGoals: goals.filter((g) => g.status === "completed")
+                .length,
+              goalProgress,
+            },
+            savingsGoals: {
+              totalGoals: goals.length,
+              activeGoals: goals.filter((g) => g.status === "in-progress")
+                .length,
+              completedGoals: goals.filter((g) => g.status === "completed")
+                .length,
+              goalProgress,
+            },
+          },
         });
     } catch (error) {
         console.error('User dashboard error:', error);

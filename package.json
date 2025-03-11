@@ -4,11 +4,11 @@
   "description": "Finance Tracker Application",
   "main": "app.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "start": "node app.js",
     "dev": "nodemon app.js",
     "test:performance": "artillery run tests/performance.yml",
-    "test:security": "node scripts/security-test.js",
+    "test:security": "snyk test",
     "test:unit": "jest --testPathPattern=tests/unit",
     "test:integration": "jest --testPathPattern=tests/integration",
     "test:performance:withserver": "node -e \"const { spawn } = require('child_process'); const server = spawn('pnpm', ['run', 'dev'], {stdio: 'inherit'}); setTimeout(() => { const test = spawn('pnpm', ['test', 'tests/performance.test.js'], {stdio: 'inherit'}).on('close', () => server.kill()); }, 3000);\"",
@@ -41,8 +41,7 @@
       "mongodb-memory-server"
     ],
     "onlyBuiltDependencies": [
-      "mongodb-memory-server",
-      "snyk"
+      "mongodb-memory-server"
     ]
   }
 }

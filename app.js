@@ -43,6 +43,7 @@ const goalRoutes = require("./routes/goal_routes");
 const categoryRoutes = require("./routes/category_routes");
 const reportRoutes = require("./routes/report_routes");
 const dashboardRoutes = require("./routes/dashboard_routes");
+const notificationsRoutes = require('./routes/notification_routes'); // Added notifications routes
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -52,6 +53,7 @@ app.use("/api/goals", goalRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use('/api/notifications', notificationsRoutes); // Register notifications endpoints
 
 // Updated home route to redirect to API docs
 app.get("/", (_req, res) => {
@@ -63,12 +65,15 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something broke!");
 });
 
-app.listen(port, () => {
-  console.log(`Finance Tracker is listening at http://localhost:${port}`);
-  console.log(
-    `API Documentation available at http://localhost:${port}/api-docs`
-  );
-});
+// Only start the server if this file is run directly (not imported as a module)
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Finance Tracker is listening at http://localhost:${port}`);
+    console.log(
+      `API Documentation available at http://localhost:${port}/api-docs`
+    );
+  });
+}
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
