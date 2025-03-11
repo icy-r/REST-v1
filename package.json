@@ -6,7 +6,13 @@
   "scripts": {
     "test": "jest",
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "test:performance": "artillery run tests/performance.yml",
+    "test:security": "node scripts/security-test.js",
+    "test:unit": "jest --testPathPattern=tests/unit",
+    "test:integration": "jest --testPathPattern=tests/integration",
+    "test:performance:withserver": "node -e \"const { spawn } = require('child_process'); const server = spawn('pnpm', ['run', 'dev'], {stdio: 'inherit'}); setTimeout(() => { const test = spawn('pnpm', ['test', 'tests/performance.test.js'], {stdio: 'inherit'}).on('close', () => server.kill()); }, 3000);\"",
+    "snyk:auth": "snyk auth"
   },
   "keywords": [],
   "author": "",
@@ -18,13 +24,24 @@
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
+    "mongodb-memory-server": "^10.1.4",
     "mongoose": "^8.11.0",
     "nodemon": "^3.1.9",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
+    "artillery": "^1.6.0-29",
     "jest": "^29.0.0",
+    "snyk": "^1.1130.0",
     "supertest": "^6.0.0"
+  },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "mongodb-memory-server"
+    ],
+    "onlyBuiltDependencies": [
+      "mongodb-memory-server"
+    ]
   }
 }

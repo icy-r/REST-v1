@@ -95,4 +95,32 @@ router.put('/update-details', verifyToken, userController.updateDetails);
  */
 router.put('/update-password', verifyToken, userController.updatePassword);
 
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get all users
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of users retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Not authorized
+ */
+router.get('/', verifyToken, userController.getAllUsers);
+
 module.exports = router;

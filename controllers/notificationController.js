@@ -95,7 +95,7 @@ exports.deleteNotification = async (req, res) => {
                 message: 'Notification not found'
             });
         }
-        await notification.remove();
+        await notification.deleteOne();
         res.status(200).json({
             success: true,
             message: 'Notification deleted successfully'

@@ -182,13 +182,14 @@ exports.deleteGoal = async (req, res) => {
             });
         }
         
-        await goal.remove();
+        await goal.deleteOne();
         
         res.status(200).json({
             success: true,
             data: {}
         });
     } catch (error) {
+        console.error(error);
         res.status(500).json({
             success: false,
             message: 'Error deleting goal',

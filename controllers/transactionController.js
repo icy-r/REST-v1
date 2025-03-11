@@ -165,7 +165,7 @@ exports.deleteTransaction = async (req, res) => {
             });
         }
         
-        await transaction.remove();
+        await transaction.deleteOne();
         
         res.status(200).json({
             success: true,

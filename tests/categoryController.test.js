@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const Category = require('../models/Category');
 const { verifyToken } = require('../middleware/jwtauth');
 
+// Mock the authentication middleware
 jest.mock('../middleware/jwtauth', () => ({
   verifyToken: jest.fn((req, res, next) => {
     req.user = { id: 'testUserId', role: 'admin' };
@@ -11,14 +12,27 @@ jest.mock('../middleware/jwtauth', () => ({
   }),
 }));
 
+// Use a test database
+const MONGO_TEST_URI = process.env.MONGO_TEST_URI || "mongodb://localhost:27017/test-db";
+
 describe('Category Controller', () => {
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI);
+    try {
+      await mongoose.connect(MONGO_TEST_URI);
+    } catch (err) {
+      console.error('Error connecting to test database:', );
+    }
   });
 
   afterAll(async () => {
-    await mongoose.connection.db.dropDatabase();
+    // Clean up all test data instead of dropping database
+    await Category.deleteMany({});
     await mongoose.connection.close();
+  });
+
+  // Clean up before each test
+  beforeEach(async () => {
+    await Category.deleteMany({});
   });
 
   describe('POST /categories', () => {
@@ -36,8 +50,15 @@ describe('Category Controller', () => {
     });
 
     it('should not create a category with an existing name', async () => {
-      await Category.create({ name: 'Duplicate Category', description: 'Test Description' });
+      // First create a category
+      const category = new Category({
+        _id: new mongoose.Types.ObjectId(),
+        name: 'Duplicate Category',
+        description: 'Test Description'
+      });
+      await category.save();
 
+      // Then try to create another with the same name
       const res = await request(app)
         .post('/api/categories')
         .send({
@@ -52,6 +73,14 @@ describe('Category Controller', () => {
 
   describe('GET /categories', () => {
     it('should get all categories', async () => {
+      // Create test categories
+      const category1 = new Category({
+        _id: new mongoose.Types.ObjectId(),
+        name: 'Test Category 1',
+        description: 'Test Description 1'
+      });
+      await category1.save();
+
       const res = await request(app).get('/api/categories');
 
       expect(res.statusCode).toEqual(200);
@@ -61,7 +90,12 @@ describe('Category Controller', () => {
 
   describe('GET /categories/:id', () => {
     it('should get a category by ID', async () => {
-      const category = await Category.create({ name: 'Test Category', description: 'Test Description' });
+      const category = new Category({
+        _id: new mongoose.Types.ObjectId(),
+        name: 'Test Category',
+        description: 'Test Description'
+      });
+      await category.save();
 
       const res = await request(app).get(`/api/categories/${category._id}`);
 
@@ -70,7 +104,8 @@ describe('Category Controller', () => {
     });
 
     it('should return 404 if category not found', async () => {
-      const res = await request(app).get('/api/categories/invalidId');
+      const nonExistentId = new mongoose.Types.ObjectId();
+      const res = await request(app).get(`/api/categories/${nonExistentId}`);
 
       expect(res.statusCode).toEqual(404);
       expect(res.body).toHaveProperty('message', 'Category not found');
@@ -79,7 +114,12 @@ describe('Category Controller', () => {
 
   describe('PUT /categories/:id', () => {
     it('should update a category', async () => {
-      const category = await Category.create({ name: 'Old Category', description: 'Old Description' });
+      const category = new Category({
+        _id: new mongoose.Types.ObjectId(),
+        name: 'Old Category',
+        description: 'Old Description'
+      });
+      await category.save();
 
       const res = await request(app)
         .put(`/api/categories/${category._id}`)
@@ -94,8 +134,9 @@ describe('Category Controller', () => {
     });
 
     it('should return 404 if category not found', async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
       const res = await request(app)
-        .put('/api/categories/invalidId')
+        .put(`/api/categories/${nonExistentId}`)
         .send({
           name: 'Updated Category',
           description: 'Updated Description',
@@ -108,7 +149,12 @@ describe('Category Controller', () => {
 
   describe('DELETE /categories/:id', () => {
     it('should delete a category', async () => {
-      const category = await Category.create({ name: 'Category to Delete', description: 'Description' });
+      const category = new Category({
+        _id: new mongoose.Types.ObjectId(),
+        name: 'Category to Delete',
+        description: 'Description'
+      });
+      await category.save();
 
       const res = await request(app).delete(`/api/categories/${category._id}`);
 
@@ -117,7 +163,8 @@ describe('Category Controller', () => {
     });
 
     it('should return 404 if category not found', async () => {
-      const res = await request(app).delete('/api/categories/invalidId');
+      const nonExistentId = new mongoose.Types.ObjectId();
+      const res = await request(app).delete(`/api/categories/${nonExistentId}`);
 
       expect(res.statusCode).toEqual(404);
       expect(res.body).toHaveProperty('message', 'Category not found');
@@ -125,4 +172,5 @@ describe('Category Controller', () => {
   });
 });
 
-module.exports = app;
+// Remove this line as it causes circular dependencies in tests
+// module.exports = app;

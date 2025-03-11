@@ -224,6 +224,83 @@ describe("Auth Controller", () => {
       );
     });
   });
+
+  describe("Integration Tests", () => {
+    it("should register, login, and get the current user", async () => {
+      const registerRes = await request(app).post("/api/auth/register").send({
+        username: "integrationuser",
+        email: "integrationuser@example.com",
+        password: "password123",
+        name: "Integration User",
+      });
+
+      expect(registerRes.statusCode).toEqual(201);
+      expect(registerRes.body).toHaveProperty("token");
+
+      const loginRes = await request(app).post("/api/auth/login").send({
+        username: "integrationuser",
+        password: "password123",
+      });
+
+      expect(loginRes.statusCode).toEqual(200);
+      expect(loginRes.body).toHaveProperty("token");
+
+      const token = loginRes.body.token;
+
+      const getMeRes = await request(app)
+        .get("/api/auth/me")
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(getMeRes.statusCode).toEqual(200);
+      expect(getMeRes.body.data).toHaveProperty("username", "integrationuser");
+    });
+
+    it("should update user details and password", async () => {
+      const registerRes = await request(app).post("/api/auth/register").send({
+        username: "integrationuser2",
+        email: "integrationuser2@example.com",
+        password: "password123",
+        name: "Integration User 2",
+      });
+
+      expect(registerRes.statusCode).toEqual(201);
+      expect(registerRes.body).toHaveProperty("token");
+
+      const token = registerRes.body.token;
+
+      const updateDetailsRes = await request(app)
+        .put("/api/auth/update-details")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          name: "Updated Integration User 2",
+          email: "updatedintegrationuser2@example.com",
+        });
+
+      expect(updateDetailsRes.statusCode).toEqual(200);
+      expect(updateDetailsRes.body.data).toHaveProperty(
+        "name",
+        "Updated Integration User 2"
+      );
+      expect(updateDetailsRes.body.data).toHaveProperty(
+        "email",
+        "updatedintegrationuser2@example.com"
+      );
+
+      const updatePasswordRes = await request(app)
+        .put("/api/auth/update-password")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          currentPassword: "password123",
+          newPassword: "newpassword123",
+        });
+
+      expect(updatePasswordRes.statusCode).toEqual(200);
+      expect(updatePasswordRes.body).toHaveProperty(
+        "message",
+        "Password updated successfully"
+      );
+    });
+  });
 });
 
 module.exports = app;
