@@ -58,6 +58,8 @@ app.use(express.json());
 // Apply rate limiter to the /api/test endpoint
 app.use('/api/test', limiter);
 
+app.use(express.json());
+
 // API Documentation
 app.use(
   "/api-docs",

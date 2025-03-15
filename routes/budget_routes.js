@@ -93,7 +93,57 @@ router.post('/', verifyToken, budgetController.createBudget);
  *       401:
  *         description: Not authorized
  */
-router.get('/', verifyToken, budgetController.getUserBudgets);
+router.get(
+  "/",
+  verifyToken,
+  isResourceOwner(Budget),
+  budgetController.getUserBudgets
+);
+
+/**
+ * @swagger
+ * /budgets/user/{userId}:
+ *   get:
+ *     summary: Get all budgets for a user
+ *     tags: [Budgets]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: List of budgets
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Budget'
+ *       401:
+ *         description: Not authorized
+ *       404:
+ *         description: User not found
+ */
+
+router.get(
+  "/user/:userId",
+  verifyToken,
+  isAdmin,
+  budgetController.getUserBudgets
+);
 
 /**
  * @swagger
